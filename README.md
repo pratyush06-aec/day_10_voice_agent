@@ -1,214 +1,168 @@
-# AI Voice Agents Challenge - Starter Repository
+Day 10 — Voice Improv Battle (Improv Game Show)
 
-Welcome to the **AI Voice Agents Challenge** by [murf.ai](https://murf.ai)!
+Voice-first improv game show — “Improv Battle”
+This repo turns your voice agent into a TV-style improv host that runs short improv rounds, listens to the player’s performance, reacts with varied feedback, and advances through rounds — all via realtime voice (LiveKit + STT + LLM + TTS). It’s Day 10 of the 10 Days of Voice Agents series.
 
-## About the Challenge
+🚀 What this project does (MVP)
 
-We just launched **Murf Falcon** – the consistently fastest TTS API, and you're going to be among the first to test it out in ways never thought before!
+Hosts a single-player improv game show entirely via voice.
 
-**Build 10 AI Voice Agents over the course of 10 Days** along with help from our devs and the community champs, and win rewards!
+Loads a set of improv scenarios from JSON (shared-data/day10_scenarios.json).
 
-### How It Works
+Runs N rounds (configurable), each:
 
-- One task to be provided everyday along with a GitHub repo for reference
-- Build a voice agent with specific personas and skills
-- Post on GitHub and share with the world on LinkedIn!
+Host announces the scenario and asks the player to act.
 
-## Repository Structure
+Player performs (voice input).
 
-This is a **monorepo** that contains both the backend and frontend for building voice agent applications. It's designed to be your starting point for each day's challenge task.
+Host reacts (supportive / neutral / lightly critical).
 
-```
-falcon-tdova-nov25-livekit/
-├── backend/          # LiveKit Agents backend with Murf Falcon TTS
-├── frontend/         # React/Next.js frontend for voice interaction
-├── start_app.sh      # Convenience script to start all services
-└── README.md         # This file
-```
+Host advances to next scenario or ends the show.
 
-### Backend
+Persists session state and supports saving / restarting sessions.
 
-The backend is based on [LiveKit's agent-starter-python](https://github.com/livekit-examples/agent-starter-python) with modifications to integrate **Murf Falcon TTS** for ultra-fast, high-quality voice synthesis.
+All speech is live: Deepgram (STT) -> Gemini (LLM) -> Murf (TTS) via LiveKit (pipeline).
 
-**Features:**
+📁 Important files & folders
+backend/
+  src/
+    agent.py                # Main agent Worker for Day 10 (voice pipeline + Assistant)
+    improv.py               # Helpers for loading/picking scenarios (utility module)
+    day10_scenarios.json    # Scenario list (shared-data path in repo root)
+    ...other support files
+shared-data/
+  day10_scenarios.json      # Scenarios JSON (editable)
+  day10_sessions/           # Saved sessions (auto-created)
+  day10_world.json?         # optional: world file if you want a world model
+frontend/                   # Optional UI (join room, show transcript, controls)
+README.md                   # This file
 
-- Complete voice AI agent framework using LiveKit Agents
-- Murf Falcon TTS integration for fastest text-to-speech
-- LiveKit Turn Detector for contextually-aware speaker detection
-- Background voice cancellation
-- Integrated metrics and logging
-- Complete test suite with evaluation framework
-- Production-ready Dockerfile
+🧩 Scenario JSON format
 
-[→ Backend Documentation](./backend/README.md)
+File: shared-data/day10_scenarios.json
+Each entry is an object with at least id, prompt, and hint:
 
-### Frontend
+[
+  {
+    "id": "dimension-barista",
+    "prompt": "You are a barista who must politely inform a customer that their latte foam is swirling into a tiny portal to another dimension.",
+    "hint": "Be calm, casual, as if this happens every morning rush."
+  },
+  {
+    "id": "runaway-taxi",
+    "prompt": "You are a taxi driver explaining to your passenger that the car has developed a 'mind of its own' and has chosen a different destination.",
+    "hint": "Speak as if this is normal and inconvenient rather than terrifying."
+  }
+  // ...
+]
 
-The frontend is based on [LiveKit's agent-starter-react](https://github.com/livekit-examples/agent-starter-react), providing a modern, beautiful UI for interacting with your voice agents.
 
-**Features:**
+Add 8–12+ scenarios for richer playthroughs. Use clear prompts that ask the player to act.
 
-- Real-time voice interaction with LiveKit Agents
-- Camera video streaming support
-- Screen sharing capabilities
-- Audio visualization and level monitoring
-- Light/dark theme switching
-- Highly customizable branding and UI
+🧠 Agent behavior & prompts
 
-[→ Frontend Documentation](./frontend/README.md)
+The LLM agent (Assistant) is seeded with a system prompt that makes it behave as a TV improv host:
 
-## Quick Start
+High-energy, witty, and constructive.
 
-### Prerequisites
+Explain rules on start.
 
-Make sure you have the following installed:
+After each host narration, the agent must end with a clear cue for the player (example: "When you're ready, begin — or say 'End scene' when finished.").
 
-- Python 3.9+ with [uv](https://docs.astral.sh/uv/) package manager
-- Node.js 18+ with pnpm
-- [LiveKit CLI](https://docs.livekit.io/home/cli/cli-setup) (optional but recommended)
-- [LiveKit Server](https://docs.livekit.io/home/self-hosting/local/) for local development
+Reactions should be short (1–2 sentences) and vary in tone.
 
-### 1. Clone the Repository
+The agent exposes function-tools the LLM can call:
 
-```bash
-git clone <your-repo-url>
-cd falcon-tdova-nov25-livekit
-```
+get_current_scene(ctx) — returns current scenario for TTS
 
-### 2. Backend Setup
+next_round(ctx) — advances to next scenario
 
-```bash
+save_session(ctx, name) — saves improv_state to disk
+
+restart_story(ctx) — resets rounds & counters
+
+get_improv_state(ctx) — debug / UI view
+
+🧾 State model (per session)
+
+Stored in ctx.userdata["improv_state"]:
+
+{
+  "player_name": "Alice",
+  "current_round": 0,
+  "max_rounds": 3,
+  "rounds": [ { "id": "...", "prompt": "...", "hint": "..." }, ... ],
+  "phase": "intro" | "awaiting_improv" | "reacting" | "done",
+  "story_history": [ {"speaker":"GM","text":"..."}, {"speaker":"player","text":"..."} ]
+}
+
+🔧 How to run (local dev)
+
+Prereqs
+
+Python 3.10+ (venv)
+
+Node.js & npm (if using frontend)
+
+Set .env.local with keys: LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_SECRET, MURF_API_KEY, etc.
+
+Backend
+
+# from repo root
 cd backend
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# mac/linux:
+source .venv/bin/activate
 
-# Install dependencies
-uv sync
+pip install -r requirements.txt
+# Ensure shared-data/day10_scenarios.json exists (edit scenarios if you want)
 
-# Copy environment file and configure
-cp .env.example .env.local
-
-# Edit .env.local with your credentials:
-# - LIVEKIT_URL
-# - LIVEKIT_API_KEY
-# - LIVEKIT_API_SECRET
-# - MURF_API_KEY (for Falcon TTS)
-# - GOOGLE_API_KEY (for Gemini LLM)
-# - DEEPGRAM_API_KEY (for Deepgram STT)
-
-# Download required models
-uv run python src/agent.py download-files
-```
-
-For LiveKit Cloud users, you can automatically populate credentials:
-
-```bash
-lk cloud auth
-lk app env -w -d .env.local
-```
-
-### 3. Frontend Setup
-
-```bash
-cd frontend
-
-# Install dependencies
-pnpm install
-
-# Copy environment file and configure
-cp .env.example .env.local
-
-# Edit .env.local with the same LiveKit credentials
-```
-
-### 4. Run the Application
-
-#### Install livekit server
-
-```bash
-brew install livekit
-```
-
-You have two options:
-
-#### Option A: Use the convenience script (runs everything)
-
-```bash
-# From the root directory
-chmod +x start_app.sh
-./start_app.sh
-```
-
-This will start:
-
-- LiveKit Server (in dev mode)
-- Backend agent (listening for connections)
-- Frontend app (at http://localhost:3000)
-
-#### Option B: Run services individually
-
-```bash
-# Terminal 1 - LiveKit Server
-livekit-server --dev
-
-# Terminal 2 - Backend Agent
-cd backend
+# Run worker (development mode)
 uv run python src/agent.py dev
 
-# Terminal 3 - Frontend
+
+Frontend (optional)
+
 cd frontend
-pnpm dev
-```
+npm install
+npm run dev
+# Open the URL printed (commonly http://localhost:3000)
+# Join the agent room from the UI to begin voice play
 
-Then open http://localhost:3000 in your browser!
+🧪 Testing locally without voice
 
-## Daily Challenge Tasks
+You can run small harnesses to drive the agent with text-only calls (if you have an inference LLM configured), or unit-test improv.py helpers:
 
-Each day, you'll receive a new task that builds upon your voice agent. The tasks will help you:
+improv.pick_unique_scenarios(n, seed) — deterministically returns scenarios.
 
-- Implement different personas and conversation styles
-- Add custom tools and capabilities
-- Integrate with external APIs
-- Build domain-specific agents (customer service, tutoring, etc.)
-- Optimize performance and user experience
+improv.get_scenario_by_id(id) — verify scenario loaded.
 
-**Stay tuned for daily task announcements!**
+Add pytest tests under backend/tests/ for:
 
-## Documentation & Resources
+scenario JSON validation
 
-- [Murf Falcon TTS Documentation](https://murf.ai/api/docs/text-to-speech/streaming)
-- [LiveKit Agents Documentation](https://docs.livekit.io/agents)
-- [Original Backend Template](https://github.com/livekit-examples/agent-starter-python)
-- [Original Frontend Template](https://github.com/livekit-examples/agent-starter-react)
+saving and loading sessions
 
-## Testing
+saving a session file is created in shared-data/day10_sessions/
 
-The backend includes a comprehensive test suite:
+✅ MVP checklist (Day 10)
 
-```bash
-cd backend
-uv run pytest
-```
+ shared-data/day10_scenarios.json (8–12 scenarios)
 
-Learn more about testing voice agents in the [LiveKit testing documentation](https://docs.livekit.io/agents/build/testing/).
+ improv.py loads & validates scenarios
 
-## Contributing & Community
+ agent.py seeds session userdata with improv_state
 
-This is a challenge repository, but we encourage collaboration and knowledge sharing!
+ Assistant has function tools: get_current_scene, next_round, save_session, restart_story, get_improv_state
 
-- Share your solutions and learnings on GitHub
-- Post about your progress on LinkedIn
-- Join the [LiveKit Community Slack](https://livekit.io/join-slack)
-- Connect with other challenge participants
+ Host ends narration with an explicit prompt for player action
 
-## License
+ Session state persists to shared-data/day10_sessions/ when saved
 
-This project is based on MIT-licensed templates from LiveKit and includes integration with Murf Falcon. See individual LICENSE files in backend and frontend directories for details.
 
-## Have Fun!
+#VoiceAI #AgenticCommerce #ACP #LiveKit #MurfAI #Gemini #STT #TTS #Ecommerce #BuildInPublic #Day9 #10DaysofAIVoiceAgents
+ Host provides varied, constructive reactions after each round
 
-Remember, the goal is to learn, experiment, and build amazing voice AI agents. Don't hesitate to be creative and push the boundaries of what's possible with Murf Falcon and LiveKit!
-
-Good luck with the challenge!
-
----
-
-Built for the AI Voice Agents Challenge by murf.ai
+ Playthrough runs for max_rounds and provides closing summary
