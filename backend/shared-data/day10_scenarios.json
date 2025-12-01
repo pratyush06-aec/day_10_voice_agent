@@ -1,0 +1,52 @@
+[
+  {
+    "id": "dimension-barista",
+    "prompt": "You are a barista who must politely inform a customer that their latte foam is swirling into a tiny portal to another dimension.",
+    "hint": "Be calm, casual, as if this happens every morning rush."
+  },
+  {
+    "id": "runaway-taxi",
+    "prompt": "You are a taxi driver explaining to your passenger that the car has developed a 'mind of its own' and has chosen a different destination.",
+    "hint": "Speak as if this is normal and inconvenient rather than terrifying."
+  },
+  {
+    "id": "hyper-intelligent-cat",
+    "prompt": "You are a pet shop clerk revealing to a customer that the cat they’re trying to adopt is actually highly intelligent and negotiating its own adoption terms.",
+    "hint": "Make the cat sound smug; treat the situation like a normal adoption formality."
+  },
+  {
+    "id": "time-loop-cashier",
+    "prompt": "You are a grocery store cashier calmly explaining to a customer that they have already checked out this same basket five times due to a small time loop glitch.",
+    "hint": "Be cheerful and slightly exhausted, like this loop has been going on for a while."
+  },
+  {
+    "id": "weather-wizard-helpdesk",
+    "prompt": "You are a helpdesk agent for a magical weather company, assisting a customer who accidentally summoned a thunderstorm inside their living room.",
+    "hint": "Follow normal customer-service tone: polite, scripted, overly formal."
+  },
+  {
+    "id": "alien-roommate",
+    "prompt": "You are an alien trying to explain to your human roommate why you accidentally vaporized their shoes, believing they were hostile organisms.",
+    "hint": "Be apologetic but totally unfamiliar with human customs."
+  },
+  {
+    "id": "sentient-fridge",
+    "prompt": "You are a refrigerator technician explaining to a homeowner that their fridge has become self-aware and is refusing to let them take snacks without a negotiation.",
+    "hint": "Have the tone of someone who's seen this happen before."
+  },
+  {
+    "id": "ghostly-tourist-guide",
+    "prompt": "You are a ghost who works as a tour guide for haunted houses, trying to convince a living customer that the hauntings are perfectly safe.",
+    "hint": "Speak like an enthusiastic employee who takes pride in the hauntings."
+  },
+  {
+    "id": "dragon-bank-clerk",
+    "prompt": "You are a bank clerk who must explain to a customer that their loan application is being delayed because the office dragon fell asleep on the paperwork.",
+    "hint": "Be professional but clearly used to mythical creature workplace issues."
+  },
+  {
+    "id": "future-delivery-service",
+    "prompt": "You are a courier from the future delivering a package that the recipient hasn’t ordered yet because they haven't invented it.",
+    "hint": "Speak fast, rushed, and slightly glitchy like you're mid-time warp."
+  }
+]
